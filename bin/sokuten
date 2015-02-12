@@ -1,0 +1,77 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+# vim:ts=2:sw=2:sts=0
+
+require 'curses'
+
+SOKUTEN_AA =
+  [
+    [
+      "＼〇／",
+      "  ｜",
+      " ／＼",
+    ],
+    [
+      "",
+      "＼＿＼〇",
+      "／   ＼",
+    ],
+    [
+      " ＿_／",
+      "    ＼＿_",
+      "    ／〇"
+    ],
+    [
+      " ＼／",
+      "  ｜",
+      "／〇＼"
+    ],
+    [
+      "   ＼＿_",
+      "＿_／",
+      " 〇＼",
+    ],
+    [
+      "",
+      "〇／＿／",
+      "／    ＼",
+    ]
+  ]
+
+SOKUTEN_WIDTH = [6, 8, 9, 6, 8, 8]
+
+begin
+  Curses.raw # 割り込み (C-c, C-z) 禁止
+  Curses.init_screen
+  Curses.stdscr.nodelay = true
+  Curses.curs_set(0) # カーソル非表示
+
+  # 側転AAの描画位置
+  v_pos = Curses.lines / 2
+  h_pos = 0
+
+  Curses.cols.times do |i|
+    index = i % SOKUTEN_AA.length
+    next_index = (i + 1) % SOKUTEN_AA.length
+
+    # 側転AAを1行ずつ描画
+    SOKUTEN_AA[index].each.with_index do |line, j|
+      Curses.setpos(v_pos + j, h_pos)
+      Curses.addstr(line)
+    end
+
+    Curses.refresh # 画面を更新
+    sleep 0.5
+    Curses.clear
+
+    # 側転しながら進んでいくので次の描画位置を計算
+    h_pos += SOKUTEN_WIDTH[index] / 2
+
+    # 次の側転AAを表示すると端末の幅を越えるときは終了する
+    break if h_pos + SOKUTEN_WIDTH[index]  + SOKUTEN_WIDTH[next_index] > Curses.cols
+  end
+
+  Curses.clear
+ensure
+  Curses.close_screen
+end
